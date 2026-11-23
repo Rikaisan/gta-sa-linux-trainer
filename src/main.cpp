@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 #include <stdio.h>
 #include <sys/uio.h>
 
@@ -72,8 +73,42 @@ void printState(pid_t pid) {
     printf("\tMoney: %d\n", money);
 }
 
+std::optional<pid_t> getTargetPid() {
+    FILE* fp = popen("pgrep gta[-_]sa.exe", "r");
+    if (fp == NULL) {
+        perror("popen");
+        return {};
+    }
+
+    static const size_t PID_BUFFER_SIZE = 16;
+
+    char buffer[PID_BUFFER_SIZE] = {};
+    fgets(buffer, PID_BUFFER_SIZE, fp);
+    pclose(fp);
+
+    for (size_t i; i < PID_BUFFER_SIZE; i++) {
+        if (buffer[i] == '\n') {
+            buffer[i] = '\0';
+            break;
+        }
+    }
+
+    if (strlen(buffer) < 1) {
+        return {};
+    }
+
+    return atoi(buffer);
+}
+
 int main(int argc, char* argv[]) {
-    pid_t gta_sa_pid = 64551;
+    auto pidResult = getTargetPid();
+
+    if (!pidResult.has_value()) {
+        printf("GTA San Andreas not open or not found.\n");
+        return 1;
+    }
+
+    pid_t gta_sa_pid = pidResult.value();
     
     if (argc <= 1) {
         printState(gta_sa_pid);
