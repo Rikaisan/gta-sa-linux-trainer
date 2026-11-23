@@ -10,6 +10,13 @@ float_t* HEALTH_LOCATION = (float_t*)0x502af88;
 float_t* ARMOR_LOCATION = (float_t*)0x502af90;
 int32_t* MONEY_LOCATION = (int32_t*)0xb7ce50;
 
+uint8_t* UNLIMITED_AMMO_TOTAL_LOCATION = (uint8_t*)0x007428e6;
+const uint8_t UNLIMITED_AMMO_TOTAL_SIZE = 3;
+uint8_t UNLIMITED_AMMO_TOTAL_ORIGINAL[UNLIMITED_AMMO_TOTAL_SIZE] = { 0xff, 0x4e, 0xc };
+uint8_t* UNLIMITED_AMMO_MAG_LOCATION = (uint8_t*)0x007428b0;
+const uint8_t UNLIMITED_AMMO_MAG_SIZE = 3;
+uint8_t UNLIMITED_AMMO_MAG_ORIGINAL[UNLIMITED_AMMO_TOTAL_SIZE] = { 0x89, 0x46, 0x8 };
+
 void printErrorMeaning(int err) {
     switch (err) {
         case EFAULT:
@@ -44,6 +51,36 @@ T getValue(pid_t pid, T* location) {
         printErrorMeaning(errno);
     }
     return read_value;
+}
+
+uint8_t* getBytes(pid_t pid, uint8_t* location, size_t size) {
+    uint8_t* read_value = (uint8_t*)malloc(size);
+    struct iovec local[1], remote[1];
+    local->iov_base = read_value;
+    local->iov_len = size;
+    remote->iov_base = location;
+    remote->iov_len = size;
+    int nread = process_vm_readv(pid, local, 1, remote, 1, 0);
+    if (nread == -1) {
+        printf("Error while reading address: %p\n", location);
+        printErrorMeaning(errno);
+    }
+    return read_value;
+}
+
+bool setBytes(pid_t pid, uint8_t* location, uint8_t* newValue, size_t size) {
+    struct iovec local[1], remote[1];
+    local->iov_base = newValue;
+    local->iov_len = size;
+    remote->iov_base = location;
+    remote->iov_len = size;
+    int nwrite = process_vm_writev(pid, local, 1, remote, 1, 0);
+    if (nwrite == -1) {
+        printf("Error while writing address: %p\n", location);
+        printErrorMeaning(errno);
+        return false;
+    }
+    return true;
 }
 
 template <typename T>
@@ -124,6 +161,31 @@ int main(int argc, char* argv[]) {
             } else {
                 printf("Couldn't modify money!\n");
                 return 3;
+            }
+        }
+        if (strcmp(argv[1], "ammo") == 0) { // Not working at the moment (even with sudo), maybe program code is protected (?)
+            if (argc < 3) {
+                printf("Usage: ammo <on|off|inspect>\n");
+                return 2;
+            }
+
+            if ((strcmp(argv[2], "on") == 0)) {
+                uint8_t newInstruction[] = { 0x90, 0x90, 0x90 };
+                setBytes(gta_sa_pid, UNLIMITED_AMMO_TOTAL_LOCATION, newInstruction, UNLIMITED_AMMO_TOTAL_SIZE);
+                setBytes(gta_sa_pid, UNLIMITED_AMMO_MAG_LOCATION, newInstruction, UNLIMITED_AMMO_TOTAL_SIZE);
+                printf("Infinite ammo enabled!\n");
+            } else if ((strcmp(argv[2], "off") == 0)) {
+                setBytes(gta_sa_pid, UNLIMITED_AMMO_TOTAL_LOCATION, UNLIMITED_AMMO_TOTAL_ORIGINAL, UNLIMITED_AMMO_TOTAL_SIZE);
+                setBytes(gta_sa_pid, UNLIMITED_AMMO_MAG_LOCATION, UNLIMITED_AMMO_MAG_ORIGINAL, UNLIMITED_AMMO_TOTAL_SIZE);
+                printf("Infinite ammo disabled!\n");
+            } else if ((strcmp(argv[2], "inspect") == 0)) {
+                uint8_t* totalInstruction = getBytes(gta_sa_pid, UNLIMITED_AMMO_TOTAL_LOCATION, UNLIMITED_AMMO_TOTAL_SIZE);
+                uint8_t* magInstruction = getBytes(gta_sa_pid, UNLIMITED_AMMO_MAG_LOCATION, UNLIMITED_AMMO_MAG_SIZE);
+                printf("Total Instruction: %x %x %x\n", totalInstruction[0], totalInstruction[1], totalInstruction[2]);
+                printf("Mag Instruction: %x %x %x\n", magInstruction[0], magInstruction[1], magInstruction[2]);
+            } else {
+                printf("Usage: ammo <on|off|inspect>\n");
+                return 2;
             }
         }
     }
