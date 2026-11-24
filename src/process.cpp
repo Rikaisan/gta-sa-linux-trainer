@@ -6,7 +6,9 @@
 
 #include "util.hpp"
 
-namespace Trainer {
+
+// Not working at the moment (even with sudo), program code is protected, so will need to attach to the proces with ptrace, probably.
+namespace Trainer {    
 	bool getBytes(pid_t pid, uintptr_t location, uint8_t* buffer, size_t size) {
         struct iovec local[1], remote[1];
         local->iov_base = buffer;
