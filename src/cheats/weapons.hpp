@@ -5,10 +5,10 @@
 
 namespace Trainer {
 	namespace Weapons {
-        extern uint8_t* INF_AMMO_TOTAL_LOCATION;
+        extern uintptr_t INF_AMMO_TOTAL_LOCATION;
         extern const uint8_t INF_AMMO_TOTAL_SIZE;
         extern uint8_t INF_AMMO_TOTAL_ORIGINAL[];
-        extern uint8_t* INF_AMMO_MAG_LOCATION;
+        extern uintptr_t INF_AMMO_MAG_LOCATION;
         extern const uint8_t INF_AMMO_MAG_SIZE;
         extern uint8_t INF_AMMO_MAG_ORIGINAL[];
 

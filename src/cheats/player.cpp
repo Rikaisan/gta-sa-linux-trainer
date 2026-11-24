@@ -1,19 +1,20 @@
 #include "player.hpp"
+#include <cmath>
 
 #include "../memory.hpp"
 
 namespace Trainer {
     namespace Player {    
-        float_t* HEALTH_LOCATION = (float_t*)0x502af88;
-        float_t* ARMOR_LOCATION = (float_t*)0x502af90;
-        int32_t* MONEY_LOCATION = (int32_t*)0xb7ce50;
-        int32_t* MONEY_ANIM_1_LOCATION = (int32_t*)0xb7ce54;
-        int32_t* MONEY_ANIM_2_LOCATION = (int32_t*)0xbaa430;
+        uintptr_t HEALTH_LOCATION = 0x502af88;
+        uintptr_t ARMOR_LOCATION = 0x502af90;
+        uintptr_t MONEY_LOCATION = 0xb7ce50;
+        uintptr_t MONEY_ANIM_1_LOCATION = 0xb7ce54;
+        uintptr_t MONEY_ANIM_2_LOCATION = 0xbaa430;
     
         void printState(pid_t pid) {
-            float_t health = Trainer::getValue(pid, HEALTH_LOCATION);
-            float_t armor = Trainer::getValue(pid, ARMOR_LOCATION);
-            int32_t money = Trainer::getValue(pid, MONEY_LOCATION);
+            float_t health = Trainer::getValue<float_t>(pid, HEALTH_LOCATION);
+            float_t armor = Trainer::getValue<float_t>(pid, ARMOR_LOCATION);
+            int32_t money = Trainer::getValue<int32_t>(pid, MONEY_LOCATION);
     
             printf("Player State:\n");
             printf("\tHealth: %f\n", health);
