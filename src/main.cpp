@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <stdio.h>
 #include <sys/uio.h>
