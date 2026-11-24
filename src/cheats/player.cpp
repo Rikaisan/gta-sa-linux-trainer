@@ -7,6 +7,8 @@ namespace Trainer {
         float_t* HEALTH_LOCATION = (float_t*)0x502af88;
         float_t* ARMOR_LOCATION = (float_t*)0x502af90;
         int32_t* MONEY_LOCATION = (int32_t*)0xb7ce50;
+        int32_t* MONEY_ANIM_1_LOCATION = (int32_t*)0xb7ce54;
+        int32_t* MONEY_ANIM_2_LOCATION = (int32_t*)0xbaa430;
     
         void printState(pid_t pid) {
             float_t health = Trainer::getValue(pid, HEALTH_LOCATION);
@@ -21,6 +23,14 @@ namespace Trainer {
 
         bool setMoney(pid_t pid, int32_t value) {
             return modifyValue(pid, MONEY_LOCATION, value);
+        }
+
+        bool setMoneyInstant(pid_t pid, int32_t value) {
+            bool success = true;
+            if(!modifyValue(pid, MONEY_LOCATION, value)) success = false;
+            if(!modifyValue(pid, MONEY_ANIM_1_LOCATION, value)) success = false;
+            if(!modifyValue(pid, MONEY_ANIM_2_LOCATION, value)) success = false;
+            return success;
         }
     }
 }
