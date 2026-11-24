@@ -2,8 +2,9 @@
 target_sources(
     ${CMAKE_PROJECT_NAME}
     PRIVATE
-    locations.cpp
     main.cpp
     process.cpp
     util.cpp
 )
+
+add_subdirectory(cheats)
